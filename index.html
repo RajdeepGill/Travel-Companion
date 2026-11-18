@@ -221,6 +221,40 @@ padding-top:20px}
 .show-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .show-grid .tile{padding:14px}.show-grid b{display:block;font-size:14.5px;margin-bottom:3px}
 @media(max-width:650px){.show-grid{grid-template-columns:1fr}}
+.sgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start;margin-top:4px}
+.smapcol{position:sticky;top:12px;order:2}
+.splan{display:flex;flex-direction:column;gap:8px;order:1}
+.smapbox{background:var(--card2);border:1px solid var(--line);border-radius:var(--radius-sm);overflow:auto;height:min(72vh,640px)}
+.smapbox svg{display:block;width:100%;height:auto}
+.sdetail{background:var(--card2);border:1px solid var(--line2);border-radius:var(--radius-xs);padding:11px 13px;margin-top:8px;min-height:80px;font-size:13.5px}
+.sdetail b{display:block;margin-bottom:3px}
+.sitem{background:var(--card2);border:1px solid var(--line2);border-radius:var(--radius-sm);padding:11px 13px}
+.sitem .t{font-size:11.5px;font-weight:850;color:var(--accent);letter-spacing:.01em}
+.sitem h3{margin:2px 0 0;font-size:14.5px;letter-spacing:-.01em}
+.sitem p{margin:3px 0 0;font-size:13px;color:var(--muted);line-height:1.5}
+.sitem .status{margin-left:6px;vertical-align:1px}
+.sitem button{font:inherit;font-size:11.5px;font-weight:750;background:transparent;color:var(--accent);border:1px solid var(--line);border-radius:999px;padding:4px 11px;margin-top:8px;cursor:pointer}
+.sitem button:hover{border-color:var(--accent);background:var(--accent-soft)}
+.status-sfree{background:var(--green-soft);color:var(--green)}
+.status-spaid{background:var(--gold-soft);color:var(--gold)}
+.status-shotel{background:rgba(106,119,139,.16);color:var(--text2)}
+.status-sbooked{background:var(--accent-soft);color:var(--accent)}
+#sMap text{font-family:inherit}
+#sMap .lbl{font-size:13px;fill:var(--text)}
+#sMap .lblsub{font-size:11px;fill:var(--muted)}
+#sMap .road{stroke:var(--line);stroke-width:26;fill:none;stroke-linecap:round;stroke-linejoin:round}
+#sMap .roadlbl{font-size:11px;fill:var(--muted);letter-spacing:.08em}
+#sMap .route{stroke:var(--plum);stroke-width:3;fill:none;stroke-linecap:round}
+#sMap .route.dash{stroke-dasharray:6 6;opacity:.7}
+#sMap .leader{stroke:var(--line);stroke-width:1}
+#sMap .dot{fill:var(--muted);opacity:.45}
+#sMap g.mk{cursor:pointer}
+#sMap g.mk:focus-visible{outline:2px solid var(--accent)}
+#sMap .mkn{font-size:11px;font-weight:800;fill:#fff;text-anchor:middle}
+#sMap .free{fill:var(--green)} #sMap .paid{fill:var(--gold)} #sMap .booked{fill:var(--accent)} #sMap .hotel{fill:var(--text)}
+#sMap .hotel+.mkn{fill:var(--card)}
+#sMap .sel{stroke:var(--plum);stroke-width:3}
+@media(max-width:650px){.sgrid{grid-template-columns:1fr}.smapcol{position:static;order:1}.splan{order:2}.smapbox{height:min(60vh,480px)}}
 </style>
 </head>
 <body>
@@ -415,8 +449,27 @@ padding-top:20px}
 <div class="zone-divider"><span class="zlabel">🗺️ Explore</span><span class="zline"></span></div>
 <h2 class="section-title" id="tripmap">🗺️ Trip Map</h2>
 <section class="card">
-<div class="small">Every stop on the plan, colour-coded by stretch of the Strip, plus your hotels and the airport. Tap a legend chip to focus one area, or jump straight to today's area.</div>
-<div class="city-filter" id="mapModeFilter" style="margin-top:12px">
+<div class="small">Pick a day to see its route along the Strip. Numbers follow the order of the day; tap a marker or "Show on map" for details.</div>
+<div class="city-filter" id="sDays" role="tablist" aria-label="Trip days" style="margin-top:12px"></div>
+<div class="sgrid">
+<div class="smapcol">
+<div class="smapbox" id="sMapBox"><svg id="sMap" viewBox="0 0 420 1040" role="img" aria-label="Schematic map of the Las Vegas Strip, north at the top"></svg></div>
+<div class="map-legend" style="margin-top:8px">
+<span class="legend-chip" style="cursor:default"><span class="legend-dot" style="background:var(--green)"></span>Free</span>
+<span class="legend-chip" style="cursor:default"><span class="legend-dot" style="background:var(--gold)"></span>Paid extra</span>
+<span class="legend-chip" style="cursor:default"><span class="legend-dot" style="background:var(--accent)"></span>Booked</span>
+<span class="legend-chip" style="cursor:default"><span class="legend-dot" style="background:var(--text)"></span>Hotel</span>
+<span class="legend-chip" style="cursor:default">◌ Dashed: optional</span>
+</div>
+<div class="sdetail" id="sDetail"><b>Tap a marker</b><div class="small">Details for each stop show here.</div></div>
+</div>
+<div class="splan" id="sPlan"></div>
+</div>
+<div class="small" style="margin-top:10px">Schematic map, north at the top. Stops sit at their real positions along the Strip, but the road shape is simplified.</div>
+</section>
+
+<details id="streetMapDetails"><summary><span class="sum-text">🧭 Street map (OpenStreetMap)</span></summary><div class="inside">
+<div class="city-filter" id="mapModeFilter" style="margin-top:4px">
 <button type="button" class="active" data-mode="detail">📍 Detail</button>
 <button type="button" data-mode="areas">🗂️ Areas only</button>
 <button type="button" id="jumpToday">🎯 Today's area</button>
@@ -428,7 +481,7 @@ padding-top:20px}
 </div>
 <div class="map-legend" id="mapLegend"></div>
 <div class="small" id="mapNote" style="margin-top:10px"></div>
-</section>
+</div></details>
 
 <h2 class="section-title" id="explore">🗺️ Explore by Area</h2>
 <div class="city-hero">
@@ -788,6 +841,110 @@ const area=dayArea[todayKey()];
 if(!area){document.getElementById("mapNote").textContent="No mapped area for today — check the Confirmed Schedule.";return}
 zoomToArea(area);document.getElementById("mapNote").textContent=`Showing today's area: ${area}.`});
 initTripMap();
+document.getElementById("streetMapDetails").addEventListener("toggle",e=>{if(e.target.open&&tripMap)setTimeout(()=>{tripMap.invalidateSize();fitAll()},50)});
+
+// ---- Schematic Strip map with per-day routes ----
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const stops={
+luxor:{n:"Luxor Hotel & Casino",lat:36.0955,lng:-115.1761,c:"hotel",note:"Night 1, Dec 3. Checkout 11 AM. Resort fee and deposit are paid at the hotel."},
+sign:{n:"Welcome to Fabulous Las Vegas sign",lat:36.0821,lng:-115.1728,y:985,c:"free",note:"Free, open 24 hours. About a mile south of Luxor. Go early — the photo line grows through the day."},
+nyny:{n:"New York-New York",lat:36.1021,lng:-115.1744,c:"free",note:"Free to see the skyline replica and the Statue of Liberty from the Strip."},
+linq:{n:"The LINQ Hotel & Casino",lat:36.1182,lng:-115.1713,c:"hotel",note:"Nights 2 and 3. Check-in from 4 PM. The bell desk holds bags before check-in and after checkout."},
+hr:{n:"LINQ Promenade + High Roller",lat:36.1176,lng:-115.1683,c:"paid",note:"The promenade is free to walk. The High Roller is a paid ride; best at sunset or night. Sat Dec 5: 12:30 PM–1:30 AM."},
+fla:{n:"Flamingo Wildlife Habitat",lat:36.1164,lng:-115.1710,c:"free",note:"Free. Open 7 AM–8 PM. Flamingos, koi and turtles."},
+forum:{n:"Forum Shops at Caesars Palace",lat:36.1190,lng:-115.1761,c:"free",note:"Roman-style mall. The Fountain of the Gods and the Fall of Atlantis show are free — confirm show times on site. Sat 10 AM–10 PM."},
+hk:{n:"Hell's Kitchen, Caesars Palace",lat:36.1162,lng:-115.1745,c:"booked",note:"Dec 4, 7:45 PM. High-top for 2. 15-minute grace period. Sleeved shirts required. (702) 731-7373."},
+cons:{n:"Bellagio Conservatory",lat:36.1120,lng:-115.1766,c:"free",note:"Free, open 24 hours. Holiday display runs through Jan 2."},
+fount:{n:"Fountains of Bellagio",lat:36.1127,lng:-115.1739,c:"free",note:"Free. A show about every 30 minutes, best after dark."},
+paris:{n:"Paris Eiffel Tower",lat:36.1125,lng:-115.1725,c:"paid",note:"Free to see from the street. The viewing deck is paid, open noon to midnight."},
+ven:{n:"Venetian Grand Canal Shoppes",lat:36.1225,lng:-115.1706,c:"paid",note:"Walking the canal and shops is free. The gondola ride is a paid extra."},
+sph:{n:"Sphere",lat:36.1212,lng:-115.1620,c:"booked",note:"Dec 4, The Wizard of Oz, 1:45 PM. Doors 1:00 PM, no late seating. Tickets in the Ticketmaster app. Outside lights are free to see after dark."}};
+const days=[
+{date:"2026-12-03",label:"Thu Dec 3",sub:"Arrive",route:["luxor"],opt:[],items:[
+ {t:"8:30 PM ET",h:"Porter PD 655, Toronto → Las Vegas",p:"Lands 10:34 PM. Basic fare, personal item only."},
+ {t:"~11:30 PM",h:"Check in at Luxor",p:"Pyramid Premier King. Nothing planned tonight.",s:"luxor"}]},
+{date:"2026-12-04",label:"Fri Dec 4",sub:"Sphere + dinner",route:["luxor","sign","nyny","linq","sph","hk","fount"],opt:["sign","nyny"],items:[
+ {t:"8:00 AM",h:"Optional: Welcome sign + New York-New York",p:"Quick ride south and back before checkout. Skip it if the morning feels tight.",s:"sign"},
+ {t:"11:15 AM",h:"Check out of Luxor, ride to The LINQ",p:"Ask for early check-in. If the room isn't ready, leave bags with the bell desk.",s:"linq"},
+ {t:"12:15 PM",h:"Leave for the Sphere",p:"Doors open 1:00 PM and there is no late seating.",s:"sph"},
+ {t:"1:45 PM",h:"The Wizard of Oz at Sphere",p:"Ends about 3:15 PM.",s:"sph"},
+ {t:"~4:00 PM",h:"Check in at The LINQ",p:"Pick up the bags. Rest before dinner.",s:"linq"},
+ {t:"7:45 PM",h:"Dinner at Hell's Kitchen",p:"Caesars Palace, a short walk from The LINQ. Sleeved shirts required.",s:"hk"},
+ {t:"~9:30 PM",h:"Fountains of Bellagio",p:"10–15 minute walk from Caesars. Free.",s:"fount"}]},
+{date:"2026-12-05",label:"Sat Dec 5",sub:"Free icons walk",route:["linq","hr","fla","forum","cons","fount","paris"],opt:[],items:[
+ {t:"10:00 AM",h:"LINQ Promenade + High Roller",p:"Walk the promenade. Ride the wheel only if you want a paid extra.",s:"hr"},
+ {t:"10:45 AM",h:"Flamingo Wildlife Habitat",p:"Free. Right next to The LINQ.",s:"fla"},
+ {t:"11:30 AM",h:"Forum Shops at Caesars",p:"Roman architecture and free shows. Allow an hour.",s:"forum"},
+ {t:"1:00 PM",h:"Bellagio Conservatory",p:"Free holiday display.",s:"cons"},
+ {t:"1:30 PM",h:"Fountains of Bellagio",p:"Free show about every 30 minutes.",s:"fount"},
+ {t:"2:00 PM",h:"Paris Eiffel Tower",p:"Free from the street, or pay for the viewing deck.",s:"paris"},
+ {t:"Evening",h:"Show of your choice",p:"Not booked yet — see Show Options."}]},
+{date:"2026-12-06",label:"Sun Dec 6",sub:"Fly home",route:["linq","ven","sph"],opt:["sph"],items:[
+ {t:"11:00 AM",h:"Check out of The LINQ",p:"Leave the bags with the bell desk until evening.",s:"linq"},
+ {t:"Midday",h:"Venetian Grand Canal Shoppes",p:"Walk the indoor canal for free. Gondola is a paid extra.",s:"ven"},
+ {t:"After dark",h:"Optional: Sphere from outside",p:"The exterior lights show best after dark.",s:"sph"},
+ {t:"~8:30 PM",h:"Pick up bags, head to LAS",p:"Aim to be at the airport about 2 hours before departure.",s:"linq"},
+ {t:"11:35 PM",h:"Porter PD 656, Las Vegas → Toronto",p:"Lands 6:52 AM on Mon Dec 7."}]}];
+const tagText={free:"Free",paid:"Paid extra",booked:"Booked",hotel:"Hotel"};
+const W=420;
+const tabsEl=document.getElementById("sDays"),planEl=document.getElementById("sPlan"),svg=document.getElementById("sMap"),box=document.getElementById("sMapBox"),detail=document.getElementById("sDetail");
+let cur=Math.max(0,days.findIndex(d=>d.date===todayKey())),focus=null;
+if(days.findIndex(d=>d.date===todayKey())<0)cur=1;
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function px(s){return{x:30+(s.lng+115.178)*11000,y:s.y!=null?s.y:30+(36.1235-s.lat)*30900}}
+function scale(){return svg.getBoundingClientRect().width/W||1}
+function renderTabs(){
+tabsEl.innerHTML="";
+days.forEach((d,i)=>{const b=document.createElement("button");b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",i===cur);b.className=i===cur?"active":"";b.innerHTML=`${d.label} <span style="font-weight:600;opacity:.8">· ${d.sub}</span>`;b.addEventListener("click",()=>{cur=i;focus=null;renderAll()});tabsEl.appendChild(b)})}
+function renderPlan(){
+planEl.innerHTML="";
+days[cur].items.forEach(it=>{
+const d=document.createElement("div");d.className="sitem";
+const s=it.s?stops[it.s]:null;
+d.innerHTML=`<div class="t">${it.t}</div><h3></h3><p></p>`;
+d.querySelector("h3").textContent=it.h;
+if(s)d.querySelector("h3").insertAdjacentHTML("beforeend",`<span class="status status-s${s.c}">${tagText[s.c]}</span>`);
+d.querySelector("p").textContent=it.p;
+if(s){const b=document.createElement("button");b.type="button";b.textContent="Show on map";b.addEventListener("click",()=>setFocus(it.s,true));d.appendChild(b)}
+planEl.appendChild(d)})}
+function bindMk(g,id){g.addEventListener("click",()=>setFocus(id,false));g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setFocus(id,false)}})}
+function renderMap(){
+svg.innerHTML="";
+const day=days[cur];
+const road=[[36.0955,-115.1765],[36.1021,-115.1748],[36.1090,-115.1738],[36.1127,-115.1735],[36.1165,-115.1722],[36.1200,-115.1712],[36.1230,-115.1704]];
+el("path",{d:road.map((p,i)=>{const q=px({lat:p[0],lng:p[1]});return(i?"L":"M")+q.x.toFixed(1)+" "+q.y.toFixed(1)}).join(" "),class:"road"},svg);
+el("text",{x:34,y:700,class:"roadlbl",transform:"rotate(-90 34 700)"},svg).textContent="LAS VEGAS BLVD";
+const lux=px(stops.luxor),sg=px(stops.sign);
+el("line",{x1:lux.x,y1:lux.y+14,x2:sg.x,y2:sg.y-14,stroke:"var(--muted)","stroke-dasharray":"3 5","stroke-width":1.5},svg);
+el("text",{x:sg.x+10,y:(lux.y+sg.y)/2,class:"lblsub"},svg).textContent="about 1 mile south of Luxor";
+const inRoute={};day.route.forEach((id,i)=>inRoute[id]=i+1);
+Object.keys(stops).forEach(id=>{if(inRoute[id])return;const p=px(stops[id]);const g=el("g",{class:"mk",tabindex:0,role:"button","aria-label":stops[id].n},svg);el("circle",{cx:p.x,cy:p.y,r:5,class:"dot"},g);el("title",{},g).textContent=stops[id].n;bindMk(g,id)});
+const pts=day.route.map(id=>({id,p:px(stops[id])}));
+for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1],dash=day.opt.includes(a.id)||day.opt.includes(b.id);el("line",{x1:a.p.x,y1:a.p.y,x2:b.p.x,y2:b.p.y,class:"route"+(dash?" dash":"")},svg)}
+const labels=pts.map(o=>({id:o.id,x:o.p.x,y:o.p.y,ly:o.p.y})).sort((a,b)=>a.y-b.y);
+for(let j=1;j<labels.length;j++)if(labels[j].ly<labels[j-1].ly+28)labels[j].ly=labels[j-1].ly+28;
+labels.forEach(l=>{el("line",{x1:l.x+12,y1:l.y,x2:248,y2:l.ly-4,class:"leader"},svg);const nm=stops[l.id].n;el("text",{x:254,y:l.ly,class:"lbl"},svg).textContent=nm.length>26?nm.slice(0,25)+"…":nm});
+pts.forEach(o=>{
+const s=stops[o.id],isOpt=day.opt.includes(o.id);
+const g=el("g",{class:"mk",tabindex:0,role:"button","aria-label":s.n},svg);
+const c=el("circle",{cx:o.p.x,cy:o.p.y,r:11,class:s.c+(focus===o.id?" sel":"")},g);
+if(isOpt){c.setAttribute("fill-opacity","0.35");c.setAttribute("stroke",focus===o.id?"var(--plum)":"var(--text)");c.setAttribute("stroke-width","2");c.setAttribute("stroke-dasharray","3 2")}
+el("text",{x:o.p.x,y:o.p.y+4,class:"mkn"},g).textContent=String(inRoute[o.id]);
+bindMk(g,o.id)});
+const top=Math.max(0,Math.min(...pts.map(o=>o.p.y))-70);
+box.scrollTop=top*scale()}
+function setFocus(id,scroll){
+focus=id;const s=stops[id];
+detail.innerHTML=`<b></b><div class="small"></div>`;
+detail.querySelector("b").textContent=s.n;
+detail.querySelector("b").insertAdjacentHTML("beforeend",` <span class="status status-s${s.c}">${tagText[s.c]}</span>`);
+detail.querySelector(".small").textContent=s.note;
+const keep=box.scrollTop;renderMap();box.scrollTop=keep;
+if(scroll){box.scrollTop=Math.max(0,px(s).y*scale()-box.clientHeight/2);box.scrollIntoView({block:"nearest",behavior:"smooth"})}}
+function renderAll(){renderTabs();renderPlan();renderMap();detail.innerHTML='<b>Tap a marker</b><div class="small">Details for each stop show here.</div>'}
+renderAll();
+})();
 
 // ---- Keep / Maybe / Skip ----
 const kmsState=lsGet("kms",{});
