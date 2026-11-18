@@ -1,7 +1,7 @@
 {
-  "name": "Europe 2026 Travel Companion",
-  "short_name": "Europe 2026",
-  "description": "Live trip companion for Toronto → London → Barcelona → Lisbon, Aug 2026",
+  "name": "Travel Companion",
+  "short_name": "Trips",
+  "description": "Live trip companion — current trip: Las Vegas, Dec 3–6, 2026",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
